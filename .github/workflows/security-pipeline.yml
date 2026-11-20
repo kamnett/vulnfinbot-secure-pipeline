@@ -30,10 +30,9 @@ jobs:
         run: pip-audit -r requirements.txt -f json -o reports/dependency-report.json
       - name: Docker build
         run: docker build -t vulnfinbot:latest .
-
       - name: Check setuptools inside Docker
         run: |
-          docker run --rm --entrypoint python vulnfinbot:latest -c "import importlib.metadata as m; print('setuptools version:', m.version('setuptools'))"
+          docker run --rm --entrypoint python vulnfinbot:latest -c "import importlib.metadata as m; print('setuptools version:', m.version('setuptools') if any(d.metadata['Name'].lower() == 'setuptools' for d in m.distributions()) else 'Not installed')"          
       - name: Trivy image report
         uses: aquasecurity/trivy-action@v0.36.0
         with:
