@@ -1,0 +1,64 @@
+name: Security CI Pipeline
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install app and scanners
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt bandit semgrep pip-audit
+          mkdir -p reports
+      - name: Unit and AI security tests
+        run: pytest -v
+      - name: Bandit report
+        continue-on-error: true
+        run: bandit -r app/ -f json -o reports/bandit-report.json
+      - name: Semgrep report
+        continue-on-error: true
+        run: semgrep scan --config security/semgrep/rules.yml --json --output reports/semgrep-report.json app/
+      - name: Dependency report
+        continue-on-error: true
+        run: pip-audit -r requirements.txt -f json -o reports/dependency-report.json
+      - name: Docker build
+        run: docker build -t vulnfinbot:latest .
+      - name: Trivy image report
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: vulnfinbot:latest
+          format: json
+          output: reports/trivy-report.json
+          exit-code: '0'
+      - name: Start app for DAST
+        run: |
+          docker run -d --name vulnfinbot --network host vulnfinbot:latest
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://localhost:5000/health; then exit 0; fi
+            sleep 2
+          done
+          docker logs vulnfinbot
+          exit 1
+      - name: OWASP ZAP baseline
+        continue-on-error: true
+        run: |
+          chmod 777 reports
+          docker run --rm --network host -v "${{ github.workspace }}/reports:/zap/wrk/:rw" ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:5000/health -J zap-report.json -I
+      - name: Generate mock AI report
+        if: always()
+        run: python scripts/ai_report.py
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vulnfinbot-security-reports
+          path: reports/
+          retention-days: 30
+          if-no-files-found: warn

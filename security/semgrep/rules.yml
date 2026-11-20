@@ -1,0 +1,17 @@
+rules:
+  - id: python-dangerous-eval
+    patterns:
+      - pattern: eval(...)
+    message: Avoid eval() on untrusted data.
+    languages: [python]
+    severity: ERROR
+  - id: python-dangerous-exec
+    pattern: exec(...)
+    message: Avoid exec() on untrusted data.
+    languages: [python]
+    severity: ERROR
+  - id: python-shell-true
+    pattern: subprocess.$FUNC(..., shell=True, ...)
+    message: Avoid shell=True with untrusted input.
+    languages: [python]
+    severity: WARNING
