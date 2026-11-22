@@ -1,0 +1,45 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini-VulnFinBot</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/chat.js" defer></script>
+</head>
+<body>
+    <main class="chat-container">
+        <header class="chat-header">
+            <div class="bot-avatar">💰</div>
+            <div>
+                <h1>Mini-VulnFinBot</h1>
+                <p>Financial Assistant · Demo</p>
+            </div>
+            <span class="status">● Online</span>
+        </header>
+
+        <section class="messages" id="messages" aria-live="polite">
+            <div class="message bot">
+                Hello! I'm Mini-VulnFinBot 👋
+                Ask me about budgeting or saving money!
+            </div>
+        </section>
+
+        <form class="chat-form" id="chat-form">
+            <input
+                type="text"
+                id="message-input"
+                placeholder="Type your message..."
+                maxlength="1000"
+                autocomplete="off"
+                required
+            >
+            <button type="submit" id="send-button">Send ➤</button>
+        </form>
+        <p class="disclaimer">
+            Demo assistant. Not professional financial advice.
+        </p>
+    </main>
+</body>
+</html>

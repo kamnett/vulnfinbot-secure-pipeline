@@ -11,7 +11,6 @@ def create_app():
     @app.errorhandler(413)
     def too_large(_error):
         return jsonify(error="Request too large"), 413
-
     @app.errorhandler(500)
     def internal_error(_error):
         return jsonify(error="Internal server error"), 500
@@ -21,12 +20,16 @@ def create_app():
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "no-referrer"
+        
         response.headers["Content-Security-Policy"] = (
-            "default-src 'none'; "
-            "frame-ancestors 'none'; "
-            "base-uri 'none'; "
-            "form-action 'none'"
-        )
+    "default-src 'none'; "
+    "script-src 'self'; "
+    "style-src 'self'; "
+    "connect-src 'self'; "
+    "frame-ancestors 'none'; "
+    "base-uri 'none'; "
+    "form-action 'self'"
+)
         response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
         response.headers["Permissions-Policy"] = (
             "camera=(), microphone=(), geolocation=()"
